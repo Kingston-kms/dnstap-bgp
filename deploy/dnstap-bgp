@@ -1,2 +1,0 @@
-CONFIG=/etc/dnstap-bgp/dnstap-bgp.conf
-NAMESPACE=dtap

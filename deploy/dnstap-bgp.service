@@ -7,7 +7,7 @@ After=network.target
 Type=simple
 Restart=on-failure
 EnvironmentFile=/etc/default/dnstap-bgp
-ExecStart=/sbin/ip netns exec ${NAMESPACE} /usr/bin/dnstap-bgp -config ${CONFIG}
+ExecStart=/usr/bin/dnstap-bgp -config /etc/dnstap-bgp/dnstap-bgp.conf
 ExecReload=/bin/kill -HUP $MAINPID
 KillMode=control-group
 

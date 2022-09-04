@@ -40,7 +40,6 @@ build-deb:
 		-a $(ARCH) \
 		$(OUT)/$(NAME)=/usr/bin/$(NAME) \
 		deploy/$(NAME).service=/usr/lib/systemd/system/$(NAME).service \
-		deploy/$(NAME)=/etc/default/$(NAME) \
 		$(OUT)/root/=/
 
 build-rpm:
@@ -56,5 +55,4 @@ build-rpm:
 		--config-files /etc/$(NAME)/$(NAME).conf \
 		$(OUT)/$(NAME)=/usr/bin/$(NAME) \
 		deploy/$(NAME).service=/usr/lib/systemd/system/$(NAME).service \
-		deploy/$(NAME)=/etc/default/$(NAME) \
 		$(OUT)/root/=/
