@@ -1,4 +1,4 @@
-module github.com/blind-oracle/dnstap-bgp
+module github.com/Kingston-kms/dnstap-bgp
 
 go 1.13
 
