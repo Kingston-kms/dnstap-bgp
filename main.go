@@ -30,10 +30,7 @@ var (
 
 func main() {
 	var (
-		/*bgp    *bgpServer*/
 		ipDB   *db
-		syncer *syncer
-
 		err      error
 		shutdown = make(chan struct{})
 	)
@@ -173,16 +170,6 @@ func main() {
 		return true
 	}
 
-	if cfg.Syncer.Listen != "" || len(cfg.Syncer.Peers) > 0 {
-		syncerCb := func(peer string, new int, err error) {
-			log.Printf("Syncer: Peer %s: synced: %d error: %v", peer, new, err)
-		}
-
-		if syncer, err = newSyncer(cfg.Syncer, ipCache.getAll, addEntry, syncerCb); err != nil {
-			log.Fatalf("Unable to init syncer: %s", err)
-		}
-	}
-
 	addHostCb := func(ip net.IP, domain string) {
 		if !dTree.has(domain) {
 			return
@@ -195,12 +182,6 @@ func main() {
 		}
 
 		addEntry(e, true)
-
-		if syncer != nil {
-			if err := syncer.broadcast(e); err != nil {
-				log.Printf("Unable to broadcast [%s %s]: %s", ip, domain, err)
-			}
-		}
 	}
 
 	dnsTapErrorCb := func(err error) {
@@ -237,9 +218,7 @@ func main() {
 
 	<-shutdown
 
-	if syncer != nil {
-		syncer.close()
-	}
+	defer routerFile.Close()
 
 	if ipDB != nil {
 		ipDB.close()
