@@ -7,7 +7,7 @@ GO ?= go
 DEP ?= dep
 VERSION := $(shell cat VERSION)
 OUT := .out
-PACKAGE := github.com/blind-oracle/$(NAME)
+PACKAGE := github.com/Kingston-kms/$(NAME)
 ARCH := amd64
 
 all: build
