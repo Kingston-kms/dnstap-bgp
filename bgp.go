@@ -57,7 +57,7 @@ func newBgp(c *bgpCfg) (b *bgpServer, err error) {
 			ListenPort: -1,
 		},
 	}); err != nil {
-		return
+		return nil, fmt.Errorf("Error while starting BGP Server %s ", err)
 	}
 
 	if err = b.s.MonitorPeer(context.Background(), &api.MonitorPeerRequest{}, func(p *api.Peer) { log.Println(p) }); err != nil {
@@ -66,7 +66,7 @@ func newBgp(c *bgpCfg) (b *bgpServer, err error) {
 
 	for _, p := range c.Peers {
 		if err = b.addPeer(p); err != nil {
-			return
+			return nil, fmt.Errorf("Error while adding peer %s ", err)
 		}
 	}
 
@@ -168,6 +168,9 @@ func (b *bgpServer) addHost(ip net.IP) (err error) {
 		Path: p,
 	})
 
+	if err != nil {
+		return err
+	}
 	return
 }
 

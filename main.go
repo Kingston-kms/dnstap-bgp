@@ -114,7 +114,9 @@ func main() {
 			}
 
 			ipCache.add(e)
-			bgp.addHost(e.IP)
+			if err := bgp.addHost(e.IP); err != nil {
+				log.Printf("%s", err)
+			}
 			i++
 		}
 
@@ -141,7 +143,9 @@ func main() {
 		}
 
 		log.Printf("%s: %s (from peer: %t)", e.Domain, e.IP, !touch)
-		bgp.addHost(e.IP)
+		 if err := bgp.addHost(e.IP); err != nil {
+			 log.Printf("%s", err)
+		 }
 		ipCache.add(e)
 		ipDBPut(e)
 
