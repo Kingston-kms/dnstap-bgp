@@ -6,6 +6,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"io"
 	"syscall"
 	"time"
 
@@ -15,11 +16,11 @@ import (
 type cfgRoot struct {
 	Domains string
 	Cache   string
+	Routers string
 	TTL     string
 	IPv6    bool
 
 	DNSTap *dnstapCfg
-	BGP    *bgpCfg
 	Syncer *syncerCfg
 }
 
@@ -29,7 +30,7 @@ var (
 
 func main() {
 	var (
-		bgp    *bgpServer
+		/*bgp    *bgpServer*/
 		ipDB   *db
 		syncer *syncer
 
@@ -37,7 +38,7 @@ func main() {
 		shutdown = make(chan struct{})
 	)
 
-	log.Printf("dnstap-bgp v%s", version)
+	log.Printf("dnstap v%s", version)
 
 	config := flag.String("config", "", "Path to a config file")
 	flag.Parse()
@@ -52,10 +53,13 @@ func main() {
 	}
 
 	cfg.DNSTap.IPv6 = cfg.IPv6
-	cfg.BGP.IPv6 = cfg.IPv6
 
 	if cfg.Domains == "" {
 		log.Fatal("You need to specify path to a domain list")
+	}
+
+	if cfg.Routers == "" {
+		log.Fatal("You need to specify path to a router list")
 	}
 
 	ttl := 24 * time.Hour
@@ -67,10 +71,10 @@ func main() {
 
 	expireCb := func(e *cacheEntry) {
 		log.Printf("%s (%s) expired", e.IP, e.Domain)
-		bgp.delHost(e.IP)
 
 		if ipDB != nil {
-			ipDB.del(e.IP)
+			if err := ipDB.del(e.IP); err != nil {
+			}
 		}
 	}
 
@@ -82,11 +86,31 @@ func main() {
 		log.Fatalf("Unable to load domain list: %s", err)
 	}
 
-	log.Printf("Domains loaded: %d, skipped: %d", cnt, skip)
-
-	if bgp, err = newBgp(cfg.BGP); err != nil {
-		log.Fatalf("Unable to init BGP: %s", err)
+	routerFile, err := os.Open(cfg.Routers)
+	if err != nil {
+		newRouterFile, err := os.Create(cfg.Routers)
+		if err != nil {
+			log.Fatalf("Unable to create router list: %s", err)
+		}
+		routerFile = newRouterFile
+		log.Printf("Create router list file: %s", cfg.Routers)
 	}
+
+	if routerFile == nil {
+		log.Fatal("Unable to open router list")
+	}
+
+	data := make([]byte, 64)
+
+	for {
+		n, err := routerFile.Read(data)
+		if err == io.EOF {
+			break
+		}
+		log.Printf("Read: %s", n)
+	}
+
+	log.Printf("Domains loaded: %d, skipped: %d", cnt, skip)
 
 	if cfg.Cache != "" {
 		if ipDB, err = newDB(cfg.Cache); err != nil {
@@ -102,21 +126,23 @@ func main() {
 		i, j, k := 0, 0, 0
 		for _, e := range es {
 			if now.Sub(e.TS) >= ttl {
-				ipDB.del(e.IP)
+				if err := ipDB.del(e.IP); err != nil {
+					continue
+				}
 				j++
 				continue
 			}
 
 			if !dTree.has(e.Domain) {
-				ipDB.del(e.IP)
+				if err := ipDB.del(e.IP); err != nil {
+					continue
+				}
 				k++
 				continue
 			}
 
 			ipCache.add(e)
-			if err := bgp.addHost(e.IP); err != nil {
-				log.Printf("%s", err)
-			}
+			// add route line
 			i++
 		}
 
@@ -142,13 +168,8 @@ func main() {
 			return false
 		}
 
-		log.Printf("%s: %s (from peer: %t)", e.Domain, e.IP, !touch)
-		 if err := bgp.addHost(e.IP); err != nil {
-			 log.Printf("%s", err)
-		 }
 		ipCache.add(e)
 		ipDBPut(e)
-
 		return true
 	}
 
@@ -194,7 +215,7 @@ func main() {
 
 	go func() {
 		sigchannel := make(chan os.Signal, 1)
-		signal.Notify(sigchannel, syscall.SIGTERM, syscall.SIGHUP, syscall.SIGUSR1, os.Interrupt)
+		signal.Notify(sigchannel, syscall.SIGTERM, syscall.SIGHUP, os.Interrupt)
 
 		for sig := range sigchannel {
 			switch sig {
@@ -208,14 +229,13 @@ func main() {
 			case os.Interrupt, syscall.SIGTERM:
 				close(shutdown)
 
-			case syscall.SIGUSR1:
-				log.Printf("IPs exported: %d, domains loaded: %d", ipCache.count(), dTree.count())
+			/*case syscall.SIGUSR1:
+				log.Printf("IPs exported: %d, domains loaded: %d", ipCache.count(), dTree.count())*/
 			}
 		}
 	}()
 
 	<-shutdown
-	bgp.close()
 
 	if syncer != nil {
 		syncer.close()

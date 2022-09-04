@@ -15,7 +15,6 @@ require (
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/mattn/goveralls v0.0.5 // indirect
 	github.com/miekg/dns v1.1.27
-	github.com/osrg/gobgp v0.0.0-20200101132111-a4b688a25ffc
 	github.com/pelletier/go-toml v1.6.0 // indirect
 	github.com/sirupsen/logrus v1.4.2 // indirect
 	github.com/spf13/afero v1.2.2 // indirect
