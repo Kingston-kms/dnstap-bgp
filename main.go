@@ -6,11 +6,11 @@ import (
 	"net"
 	"os"
 	"os/signal"
-	"io"
 	"syscall"
 	"time"
 
 	"github.com/BurntSushi/toml"
+	"fmt"
 )
 
 type cfgRoot struct {
@@ -21,7 +21,6 @@ type cfgRoot struct {
 	IPv6    bool
 
 	DNSTap *dnstapCfg
-	Syncer *syncerCfg
 }
 
 var (
@@ -97,14 +96,8 @@ func main() {
 		log.Fatal("Unable to open router list")
 	}
 
-	data := make([]byte, 64)
-
-	for {
-		n, err := routerFile.Read(data)
-		if err == io.EOF {
-			break
-		}
-		log.Printf("Read: %s", n)
+	if err := routerFile.Truncate(0); err != nil {
+		log.Fatal("Unable to clear file router list")
 	}
 
 	log.Printf("Domains loaded: %d, skipped: %d", cnt, skip)
@@ -139,6 +132,11 @@ func main() {
 			}
 
 			ipCache.add(e)
+			routeStr := fmt.Sprintf("route %s reject;", e)
+
+			if _, err := routerFile.WriteString(routeStr); err != nil {
+
+			}
 			// add route line
 			i++
 		}
