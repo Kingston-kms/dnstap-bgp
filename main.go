@@ -202,9 +202,7 @@ func main() {
 	}()
 
 	<-shutdown
-
-	defer routerFile.Close()
-
+	
 	if ipDB != nil {
 		ipDB.close()
 	}
