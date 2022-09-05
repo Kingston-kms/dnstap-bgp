@@ -82,6 +82,10 @@ func main() {
 		log.Fatalf("Unable to load domain list: %s", err)
 	}
 
+	if err := os.Truncate(cfg.Routers, 0); err != nil {
+		//log.Fatalf("Unable to clear file router list: %s", err)
+	}
+
 	routerFile, err := os.Open(cfg.Routers)
 	if err != nil {
 		newRouterFile, err := os.Create(cfg.Routers)
@@ -94,10 +98,6 @@ func main() {
 
 	if routerFile == nil {
 		log.Fatal("Unable to open router list")
-	}
-
-	if err := routerFile.Truncate(0); err != nil {
-		log.Fatalf("Unable to clear file router list: %s", err)
 	}
 
 	log.Printf("Domains loaded: %d, skipped: %d", cnt, skip)
