@@ -83,7 +83,7 @@ func main() {
 		log.Fatalf("Unable to load domain list: %s", err)
 	}
 
-	if err := exec.Command("/bin/bash", "-c", fmt.Sprintf("echo > %s", cfg.Routers)).Run(); err != nil {
+	if err := exec.Command("/bin/bash", "-c", fmt.Sprintf("echo \"\" > %s", cfg.Routers)).Run(); err != nil {
 		log.Printf("Error Write File %s", err)
 	}
 
@@ -122,8 +122,6 @@ func main() {
 			if err := exec.Command("/bin/bash", "-c", fmt.Sprintf("echo \" route %s reject;\" >> %s", e.IP.String(), cfg.Routers)).Run(); err != nil {
 				log.Printf("Error Write File %s", err)
 			}
-
-			// add route line
 			i++
 		}
 
@@ -149,8 +147,15 @@ func main() {
 			return false
 		}
 
+		log.Printf("%s: %s (from peer: %t)", e.Domain, e.IP, !touch)
 		ipCache.add(e)
 		ipDBPut(e)
+		if err := exec.Command("/bin/bash", "-c", fmt.Sprintf("echo \" route %s reject;\" >> %s", e.IP.String(), cfg.Routers)).Run(); err != nil {
+			log.Printf("Error Write File %s", err)
+		}
+		if err := exec.Command("/bin/bash", "-c", "/usr/sbin/birdc configure").Run(); err != nil {
+			
+		}
 		return true
 	}
 
