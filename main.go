@@ -6,6 +6,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"os/exec"
 	"syscall"
 	"time"
 
@@ -82,22 +83,8 @@ func main() {
 		log.Fatalf("Unable to load domain list: %s", err)
 	}
 
-	if err := os.Truncate(cfg.Routers, 0); err != nil {
-		//log.Fatalf("Unable to clear file router list: %s", err)
-	}
-
-	routerFile, err := os.Open(cfg.Routers)
-	if err != nil {
-		newRouterFile, err := os.Create(cfg.Routers)
-		if err != nil {
-			log.Fatalf("Unable to create router list: %s", err)
-		}
-		routerFile = newRouterFile
-		log.Printf("Create router list file: %s", cfg.Routers)
-	}
-
-	if routerFile == nil {
-		log.Fatal("Unable to open router list")
+	if err := exec.Command("/bin/bash", "-c", fmt.Sprintf("echo > %s", cfg.Routers)).Run(); err != nil {
+		log.Printf("Error Write File %s", err)
 	}
 
 	log.Printf("Domains loaded: %d, skipped: %d", cnt, skip)
@@ -133,10 +120,10 @@ func main() {
 
 			ipCache.add(e)
 			routeStr := fmt.Sprintf("route %s reject;", e)
-
-			if _, err := routerFile.WriteString(routeStr); err != nil {
-				log.Printf("Write File %s", err)
+			if err := exec.Command("/bin/bash", "-c", fmt.Sprintf("echo %s >> %s", routeStr, cfg.Routers)).Run(); err != nil {
+				log.Printf("Error Write File %s", err)
 			}
+
 			// add route line
 			i++
 		}
