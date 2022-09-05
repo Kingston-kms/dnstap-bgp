@@ -135,7 +135,7 @@ func main() {
 			routeStr := fmt.Sprintf("route %s reject;", e)
 
 			if _, err := routerFile.WriteString(routeStr); err != nil {
-
+				log.Printf("Write File %s", err)
 			}
 			// add route line
 			i++
