@@ -97,7 +97,7 @@ func main() {
 	}
 
 	if err := routerFile.Truncate(0); err != nil {
-		log.Fatal("Unable to clear file router list")
+		log.Fatalf("Unable to clear file router list: %s", err)
 	}
 
 	log.Printf("Domains loaded: %d, skipped: %d", cnt, skip)
