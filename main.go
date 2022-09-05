@@ -119,7 +119,7 @@ func main() {
 			}
 
 			ipCache.add(e)
-			if err := exec.Command("/bin/bash", "-c", fmt.Sprintf("echo \" route %s/32 reject;\" >> %s", e.IP.String(), cfg.Routers)).Run(); err != nil {
+			if err := exec.Command("/bin/bash", "-c", fmt.Sprintf("echo \" route %s/ %d reject;\" >> %s", e.IP.String(), 32, cfg.Routers)).Run(); err != nil {
 				log.Printf("Error Write File %s", err)
 			}
 			i++
