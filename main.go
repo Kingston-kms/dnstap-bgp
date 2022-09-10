@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/signal"
 	"os/exec"
-	"regexp"
 	"syscall"
 	"time"
 
