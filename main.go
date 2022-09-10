@@ -161,6 +161,9 @@ func main() {
 
 	addHostCb := func(ip net.IP, domain string) {
 
+		if !dTree.has(domain) {
+			return
+		}
 
 		e := &cacheEntry{
 			IP:     ip,
