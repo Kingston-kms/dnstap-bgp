@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"os/exec"
+	"regexp"
 	"syscall"
 	"time"
 
@@ -160,6 +161,7 @@ func main() {
 	}
 
 	addHostCb := func(ip net.IP, domain string) {
+
 
 		e := &cacheEntry{
 			IP:     ip,

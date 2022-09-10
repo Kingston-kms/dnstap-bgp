@@ -42,7 +42,9 @@ type domainTree struct {
 }
 
 func (d *domainTree) has(s string) (ok bool) {
+
 	dr := domainReverse(s)
+	fmt.Printf("Domain %s = %s", s, dr)
 
 	d.RLock()
 	pfx, _, ok := d.t.LongestPrefix(dr)
