@@ -160,11 +160,6 @@ func main() {
 	}
 
 	addHostCb := func(ip net.IP, domain string) {
-		
-		log.Printf("Domain lookup: name %s, ip %s", domain, ip)
-		if !dTree.has(domain) {
-			return
-		}
 
 		e := &cacheEntry{
 			IP:     ip,
